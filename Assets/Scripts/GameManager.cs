@@ -8,11 +8,15 @@ public class GameManager : MonoBehaviour
     PlayerMovement player;
     MenuManager menus;
     Reticle ret;
+    Lava lava;
+    Timer[] timers = { };
     private void Awake()
     {
         player = FindObjectOfType<PlayerMovement>();
         menus = GetComponent<MenuManager>();
         ret = FindObjectOfType<Reticle>();
+        lava = FindObjectOfType<Lava>();
+        timers = FindObjectsOfType<Timer>();
     }
     private void Start()
     {
@@ -37,11 +41,19 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0;
         ret.Hide();
         menus.SetActiveScreen(1);
+        lava.StopRise();
     }
     public void Reset()
     {
         player.Reset();
         menus.Reset();
+        lava.Reset();
         ret.Show();
+        foreach (Timer t in timers) {
+            t.Reset();
+        }
+    }
+    public void TimeUp() {
+        lava.StartRise();
     }
 }

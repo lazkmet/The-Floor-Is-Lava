@@ -14,7 +14,7 @@ public class GunRotate : MonoBehaviour
     {
         originalRotation = transform.localRotation;
     }
-    void Update()
+    void FixedUpdate()
     {
         if (grapple.ropeRenderer.enabled == true)
         {

@@ -33,7 +33,7 @@ public class PlayerMovement : MonoBehaviour
 
     //Input
     float x, y;
-    bool jumping, sprinting;
+    bool jumping, sprinting, extending;
 
     private void Awake()
     {
@@ -61,6 +61,7 @@ public class PlayerMovement : MonoBehaviour
         x = Input.GetAxisRaw("Horizontal");
         y = Input.GetAxisRaw("Vertical");
         jumping = Input.GetButton("Jump");
+        extending = Input.GetButton("Fire3");
     }
 
     private void Movement()
@@ -77,6 +78,10 @@ public class PlayerMovement : MonoBehaviour
 
         //If holding jump && ready to jump, then jump
         if (readyToJump && jumping) Jump();
+
+        //If holding space, retract rope. If holding shift, extend rope
+        if (jumping) { grapple.Extend(-extendAmount * 1.5f * Time.deltaTime); }
+        if (extending) { grapple.Extend(extendAmount * Time.deltaTime); }
 
         //Set max speed
         float maxSpeed = this.maxSpeed;

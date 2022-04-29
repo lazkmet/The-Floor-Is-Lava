@@ -15,6 +15,7 @@ public class Grapple : MonoBehaviour
     public float minLength;
     public GameObject claw;
     private Vector3 clawOrigin;
+    private Quaternion clawOriginRot;
     public float currentLength { get; private set; }
 
     [HideInInspector]
@@ -30,6 +31,7 @@ public class Grapple : MonoBehaviour
         player = gameObject.GetComponent<PlayerMovement>();
         joint = null;
         clawOrigin = claw.transform.localPosition;
+        clawOriginRot = claw.transform.localRotation;
     }
 
     public void Update()
@@ -62,10 +64,11 @@ public class Grapple : MonoBehaviour
         }
     }
     public void Extend(float extensionAmount) {
+        if (!attached) { return; }
         currentLength += extensionAmount;
         currentLength = Mathf.Clamp(currentLength, minLength, maxLength);
-        if (joint != null) { 
-        
+        if (joint != null) {
+            joint.maxDistance = currentLength;
         }
     }
     public IEnumerator CR_FireRope() {
@@ -106,8 +109,8 @@ public class Grapple : MonoBehaviour
                 currentLength = Mathf.Max(distanceFromPoint * 0.8f, minLength*1.1f);
                 joint.maxDistance = currentLength;
                 joint.minDistance = minLength;
-                joint.spring = 30f;
-                joint.damper = 25f;
+                joint.spring = 1000f;
+                joint.damper = 900f;
                 joint.massScale = 4.5f;
             }
             else {
@@ -127,18 +130,18 @@ public class Grapple : MonoBehaviour
                 Destroy(joint);
                 joint = null;
             }
-            Vector3 startPoint = ropeRenderer.GetPosition(ropeRenderer.positionCount-1);
-            for (float time = 0; time < fireDuration * 0.35f; time += Time.deltaTime)
-            {
-                ropeRenderer.SetPosition(1, Vector3.Lerp(startPoint, ropeOrigin.position, time / (0.35f *fireDuration)));
-                claw.transform.position = ropeRenderer.GetPosition(1);
-                claw.transform.LookAt(ropeOrigin);
-                claw.transform.rotation = Quaternion.Inverse(claw.transform.rotation);
-                yield return null;
+            if (ropeRenderer.enabled) {
+                Vector3 startPoint = ropeRenderer.GetPosition(ropeRenderer.positionCount - 1);
+                for (float time = 0; time < fireDuration * 0.35f; time += Time.deltaTime)
+                {
+                    ropeRenderer.SetPosition(1, Vector3.Lerp(startPoint, ropeOrigin.position, time / (0.35f * fireDuration)));
+                    claw.transform.position = ropeRenderer.GetPosition(1);
+                    yield return null;
+                }
+                ropeRenderer.enabled = false;
             }
-            ropeRenderer.enabled = false;
             claw.transform.localPosition = clawOrigin;
-            claw.transform.localRotation = Quaternion.identity;
+            claw.transform.localRotation = clawOriginRot;
             returning = false;
             if (buffering) {
                 buffering = false;
@@ -163,5 +166,7 @@ public class Grapple : MonoBehaviour
             Destroy(joint);
             joint = null;
         }
+        claw.transform.localPosition = clawOrigin;
+        claw.transform.localRotation = clawOriginRot;
     }
 }
